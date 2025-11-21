@@ -34,11 +34,10 @@ TEST(CalculateTest, CorrectlyParseStationChargers) {
         "2 1004\n"
     };
 
-    const auto expected = std::unordered_map<uint32_t, uint32_t>{
-        {1001, 0},
-        {1002, 0},
-        {1003, 1},
-        {1004, 2}
+    const auto expected = std::unordered_map<uint32_t, std::vector<uint32_t>>{
+        {0, {1001, 1002}},
+        {1, {1003}},
+        {2, {1004}}
     };
 
     const auto result = Calculate::parseStationChargers(stream);
@@ -84,11 +83,10 @@ TEST(CalculateTest, CorrectlyParseAvailabilityReports) {
 }
 
 TEST(CalculateTest, CorrectlyProduceResults) {
-    const auto chargerToStation = std::unordered_map<uint32_t, uint32_t>{
-            {1001, 0},
-            {1002, 0},
-            {1003, 1},
-            {1004, 2}
+    const auto stationChargers = std::unordered_map<uint32_t, std::vector<uint32_t>>{
+            {0, {1001, 1002}},
+            {1, {1003}},
+            {2, {1004}}
     };
 
     const auto availabilityReports = std::unordered_map<uint32_t,std::vector<Calculate::Uptime>>{
@@ -104,7 +102,7 @@ TEST(CalculateTest, CorrectlyProduceResults) {
         "2 75"
     };
 
-    const auto result = Calculate::produceUptimeResults(chargerToStation,availabilityReports);
+    const auto result = Calculate::produceUptimeResults(stationChargers,availabilityReports);
 
     ASSERT_TRUE(result.has_value());
     EXPECT_EQ(result.value(), expected);

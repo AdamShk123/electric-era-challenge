@@ -179,7 +179,7 @@ namespace Calculate {
                     merged.back().end = interval.start;
                     merged.push_back(interval);
                     if (end > interval.end) {
-                        merged.push_back(Uptime{interval.end,end,merged.back().up});
+                        merged.push_back(Uptime{interval.end, end, !interval.up});
                     }
                 }
             }

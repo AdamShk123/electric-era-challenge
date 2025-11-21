@@ -107,3 +107,131 @@ TEST(CalculateTest, CorrectlyProduceResults) {
     ASSERT_TRUE(result.has_value());
     EXPECT_EQ(result.value(), expected);
 }
+
+TEST(CalculateTest, MergeIntervalsWithSameState) {
+    auto intervals = std::vector<Calculate::Uptime>{
+        {0, 1000, true},
+        {1000, 2000, true},
+        {3000, 4000, true}
+    };
+
+    const auto expected = std::vector<Calculate::Uptime>{
+        {0, 2000, true},
+        {3000, 4000, true}
+    };
+
+    const auto result = Calculate::mergeIntervals(std::move(intervals));
+
+    EXPECT_EQ(result, expected);
+}
+
+TEST(CalculateTest, MergeIntervalsWithDifferentStates) {
+    auto intervals = std::vector<Calculate::Uptime>{
+        {0, 2000, true},
+        {1000, 3000, false}
+    };
+
+    const auto expected = std::vector<Calculate::Uptime>{
+        {0, 1000, true},
+        {1000, 3000, false}
+    };
+
+    const auto result = Calculate::mergeIntervals(std::move(intervals));
+
+    EXPECT_EQ(result, expected);
+}
+
+TEST(CalculateTest, MergeIntervalsWithOverlappingDifferentStates) {
+    auto intervals = std::vector<Calculate::Uptime>{
+        {0, 3000, true},
+        {1000, 2000, false}
+    };
+
+    const auto expected = std::vector<Calculate::Uptime>{
+        {0, 1000, true},
+        {1000, 2000, false},
+        {2000, 3000, true}
+    };
+
+    const auto result = Calculate::mergeIntervals(std::move(intervals));
+
+    EXPECT_EQ(result, expected);
+}
+
+TEST(CalculateTest, MergeIntervalsEmpty) {
+    auto intervals = std::vector<Calculate::Uptime>{};
+
+    const auto result = Calculate::mergeIntervals(std::move(intervals));
+
+    EXPECT_TRUE(result.empty());
+}
+
+TEST(CalculateTest, MergeIntervalsSingleElement) {
+    auto intervals = std::vector<Calculate::Uptime>{
+        {0, 1000, true}
+    };
+
+    const auto expected = std::vector<Calculate::Uptime>{
+        {0, 1000, true}
+    };
+
+    const auto result = Calculate::mergeIntervals(std::move(intervals));
+
+    EXPECT_EQ(result, expected);
+}
+
+TEST(CalculateTest, ResolvePercentageAllUp) {
+    const auto merged = std::vector<Calculate::Uptime>{
+        {0, 1000, true},
+        {2000, 3000, true}
+    };
+
+    const auto result = Calculate::resolvePercentage(merged);
+
+    EXPECT_EQ(result, 66);  // 2000 available / 3000 total * 100 = 66.666... = 66
+}
+
+TEST(CalculateTest, ResolvePercentageAllDown) {
+    const auto merged = std::vector<Calculate::Uptime>{
+        {0, 1000, false},
+        {2000, 3000, false}
+    };
+
+    const auto result = Calculate::resolvePercentage(merged);
+
+    EXPECT_EQ(result, 0);
+}
+
+TEST(CalculateTest, ResolvePercentageMixed) {
+    const auto merged = std::vector<Calculate::Uptime>{
+        {0, 1000, true},
+        {1000, 2000, false},
+        {3000, 4000, true}
+    };
+
+    const auto result = Calculate::resolvePercentage(merged);
+
+    EXPECT_EQ(result, 50);  // 2000 available / 4000 total * 100 = 50
+}
+
+TEST(CalculateTest, ResolvePercentageEmpty) {
+    constexpr auto merged = std::vector<Calculate::Uptime>{};
+
+    const auto result = Calculate::resolvePercentage(merged);
+
+    EXPECT_EQ(result, 0);
+}
+
+TEST(CalculateTest, ResolvePercentageWithGaps) {
+    const auto merged = std::vector<Calculate::Uptime>{
+        {1000, 2000, true},
+        {3000, 4000, false}
+    };
+
+    const auto result = Calculate::resolvePercentage(merged);
+
+    // Total: (2000-1000) + (3000-2000) + (4000-3000) = 1000 + 1000 + 1000 = 3000
+    // Available: 1000
+    // Percentage: 1000/3000 * 100 = 33.333... = 33
+    EXPECT_EQ(result, 33);
+}

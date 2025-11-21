@@ -1,5 +1,0 @@
-if(EXISTS "/home/adam/Projects/electric-era-challenge/build/test/test[1]_tests.cmake")
-  include("/home/adam/Projects/electric-era-challenge/build/test/test[1]_tests.cmake")
-else()
-  add_test(test_NOT_BUILT test_NOT_BUILT)
-endif()

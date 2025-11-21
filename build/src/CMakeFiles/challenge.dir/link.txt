@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -DNDEBUG -Wl,--dependency-file=CMakeFiles/challenge.dir/link.d CMakeFiles/challenge.dir/main.cpp.o CMakeFiles/challenge.dir/calculate.cpp.o -o challenge

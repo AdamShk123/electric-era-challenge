@@ -1,10 +1,6 @@
 #include "main.hpp"
 
-#include <fstream>
 #include <print>
-#include <unordered_map>
-#include <vector>
-#include <sstream>
 
 int main(const int argc, char** argv) {
     // prevent running executable without passing correct number of arguments
@@ -15,52 +11,22 @@ int main(const int argc, char** argv) {
         return 1;
     }
 
-    // PROJECT_ROOT macro is defined in CMake to allow user to use relative path when passing argument
-    std::ifstream file(std::string(PROJECT_ROOT) + std::string(argv[1]));
+    auto result = Calculate::calculateUptime(std::string(argv[1]));
 
-    // verify that the file has been opened successfully
-    if (!file.is_open()) {
-        std::println(stderr, "Could not open file: {}", argv[1]);
+    if (!result.has_value()) {
+        switch (result.error()) {
+            case Calculate::ErrorCode::FileNotFound:
+                std::println(stderr, "Could not find and read file based on given path: {}", argv[1]);
+            case Calculate::ErrorCode::ParseError:
+                std::println(stderr, "Failed to parse file");
+        }
+
         return 1;
     }
 
-    std::println("Successfully opened file: {}", argv[1]);
-
-    std::string line{};
-
-    std::unordered_map<int, std::vector<int>> stationChargers{};
-
-    // skip [Stations] line as it's only a header and doesn't contain any data
-    file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-
-    // read all data until blank line between the station and uptime sections
-    while (std::getline(file, line) && line.size() != 0) {
-        std::println("{}",line);
-
-        std::stringstream stream{line};
-
-        std::vector<std::string> tokens{};
-
-        // get station number
-        int station{};
-
-        if (!(stream >> station)) {
-            std::println(stderr, "Could not read station: {}", line);
-        };
-
-        int charger{};
-
-        // get charger numbers
-        while (!(stream >> charger)) {
-            stationChargers[station].push_back(charger);
-        }
-
-        if (stream.fail()) {
-            std::println(stderr, "Could not read charger: {}", line);
-        }
+    for (const auto& line : result.value()) {
+        std::println("{}", line);
     }
-
-    file.close();
 
     return 0;
 }

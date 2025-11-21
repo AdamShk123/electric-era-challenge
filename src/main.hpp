@@ -1,4 +1,3 @@
-#ifndef ELECTRIC_ERA_CHALLENGE_MAIN_HPP
-#define ELECTRIC_ERA_CHALLENGE_MAIN_HPP
+#pragma once
 
-#endif //ELECTRIC_ERA_CHALLENGE_MAIN_HPP
+#include "calculate.hpp"

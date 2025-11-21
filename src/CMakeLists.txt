@@ -8,4 +8,5 @@ target_compile_definitions(challenge PRIVATE
 
 target_sources(challenge PRIVATE
     ${PROJECT_SOURCE_DIR}/src/main.cpp
+    ${PROJECT_SOURCE_DIR}/src/calculate.cpp
 )

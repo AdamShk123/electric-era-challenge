@@ -1,0 +1,17 @@
+CalculateTest.NoFileFound 1 0.00175
+CalculateTest.FileExistsAndResultCanBeCalculated 1 0.00175357
+CalculateTest.CorrectlyParseStationChargers 1 0.00158086
+CalculateTest.ErrorWhileParsingStationChargersDueToNonAllowedCharacter 1 0.00160263
+CalculateTest.CorrectlyParseAvailabilityReports 1 0.00167404
+CalculateTest.CorrectlyProduceResults 1 0.00187223
+CalculateTest.MergeIntervalsWithSameState 1 0.00203196
+CalculateTest.MergeIntervalsWithDifferentStates 1 0.00186834
+CalculateTest.MergeIntervalsWithOverlappingDifferentStates 1 0.00158614
+CalculateTest.MergeIntervalsEmpty 1 0.00198959
+CalculateTest.MergeIntervalsSingleElement 1 0.00193122
+CalculateTest.ResolvePercentageAllUp 1 0.00180137
+CalculateTest.ResolvePercentageAllDown 1 0.00163695
+CalculateTest.ResolvePercentageMixed 1 0.00171697
+CalculateTest.ResolvePercentageEmpty 1 0.0015572
+CalculateTest.ResolvePercentageWithGaps 1 0.00159386
+---

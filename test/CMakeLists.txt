@@ -22,3 +22,6 @@ target_sources(test PRIVATE
     ${PROJECT_SOURCE_DIR}/test/test.cpp
     ${PROJECT_SOURCE_DIR}/src/calculate.cpp
 )
+
+include(GoogleTest)
+gtest_discover_tests(test)

@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <map>
 #include <format>
+#include <ranges>
 
 namespace Calculate {
     auto calculateUptime(const std::string& name) -> std::expected<std::vector<std::string>,ErrorCode> {
@@ -127,40 +128,91 @@ namespace Calculate {
         // Use map instead of unordered_map to keep results sorted by station number
         std::map<uint32_t, uint32_t> results{};
 
-        for (const auto &[station, chargers] : stationChargers) {
-            uint64_t totalTime{0};
-            uint64_t availableTime{0};
+        for (const auto& [station, chargers] : stationChargers) {
+            std::vector<Uptime> intervals{};
 
             for (const auto& charger : chargers) {
-                if (availabilityReports.contains(charger)) {
-                    const auto& uptimes = availabilityReports.at(charger);
+                if (auto it = availabilityReports.find(charger); it != availabilityReports.end()) {
+                    const auto& uptimes = it->second;
 
-                    for (const auto &[start, end, up] : uptimes) {
-                        totalTime += end - start;
-
-                        if (up) {
-                            availableTime += end - start;
-                        }
+                    for (const auto& uptime : uptimes) {
+                        intervals.push_back(uptime);
                     }
                 }
             }
 
-            if (totalTime > 0) {
-                results[station] = static_cast<uint32_t>(static_cast<double>(availableTime) / static_cast<double>(totalTime) * 100);
-            } else {
-                results[station] = 0;
-            }
+            const auto merged = mergeIntervals(std::move(intervals));
+
+            const auto percentage = resolvePercentage(merged);
+
+            results[station] = percentage;
         }
 
         // Transform map to vector of strings
-        std::vector<std::string> output{};
-        output.reserve(results.size());
-
-        std::ranges::transform(results, std::back_inserter(output),
-       [](const auto& pair) {
-           return std::format("{} {}", pair.first, pair.second);
-       });
+        auto output = results
+            | std::views::transform([](const auto& pair) {
+                  return std::format("{} {}", pair.first, pair.second);
+              })
+            | std::ranges::to<std::vector>();
 
         return output;
+    }
+
+    auto mergeIntervals(std::vector<Uptime>&& intervals) -> std::vector<Uptime> {
+        if (intervals.empty()) {
+            return {};
+        }
+
+        std::ranges::sort(intervals, [](const auto& a, const auto& b) {
+                return a.start < b.start;
+        });
+
+        std::vector<Uptime> merged{intervals[0]};
+
+        for (const auto& interval : intervals | std::views::drop(1)) {
+            if (interval.start <= merged.back().end) {
+                if (interval.up == merged.back().up) {
+                    merged.back().end = std::max(merged.back().end, interval.end);
+                }
+                else {
+                    const auto end = merged.back().end;
+                    merged.back().end = interval.start;
+                    merged.push_back(interval);
+                    if (end > interval.end) {
+                        merged.push_back(Uptime{interval.end,end,merged.back().up});
+                    }
+                }
+            }
+            else {
+                merged.push_back(interval);
+            }
+        }
+
+        return merged;
+    }
+
+    auto resolvePercentage(const std::vector<Uptime>& merged) -> uint32_t  {
+        if (merged.empty()) return 0;
+
+        uint64_t total{0};
+        uint64_t available{0};
+
+        std::optional<uint64_t> prev{std::nullopt};
+
+        for (const auto&[start, end, up] : merged) {
+            total += end - start;
+
+            if (prev.has_value()) {
+                total += start - prev.value();
+            }
+
+            if (up) {
+                available += end - start;
+            }
+
+            prev = end;
+        }
+
+        return static_cast<uint32_t>(static_cast<double>(available) / static_cast<double>(total) * 100.0);
     }
 } // namespace Calculate

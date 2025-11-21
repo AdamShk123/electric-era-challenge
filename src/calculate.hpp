@@ -27,4 +27,6 @@ namespace Calculate {
     auto parseStationChargers(std::istream &file) -> std::expected<std::unordered_map<uint32_t, std::vector<uint32_t>>,ErrorCode>;
     auto parseAvailabilityReports(std::istream &file) -> std::expected<std::unordered_map<uint32_t, std::vector<Uptime>>, ErrorCode>;
     auto produceUptimeResults(const std::unordered_map<uint32_t, std::vector<uint32_t>>& stationChargers, const std::unordered_map<uint32_t, std::vector<Uptime>>& availabilityReports) -> std::expected<std::vector<std::string>,ErrorCode>;
+    auto mergeIntervals(std::vector<Uptime>&& intervals) -> std::vector<Uptime>;
+    auto resolvePercentage(const std::vector<Uptime>& merged) -> uint32_t;
 }

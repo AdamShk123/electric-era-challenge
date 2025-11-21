@@ -25,7 +25,7 @@ namespace Calculate {
         return {};
     }
 
-    std::expected<std::unordered_map<int, std::vector<int>>,ErrorCode> parseStationChargers(std::ifstream& file) {
+    std::expected<std::unordered_map<int, std::vector<int>>,ErrorCode> parseStationChargers(std::istream& file) {
         std::string line{};
 
         std::unordered_map<int, std::vector<int>> stationChargers{};
@@ -48,11 +48,12 @@ namespace Calculate {
             int charger{};
 
             // get charger numbers
-            while (!(stream >> charger)) {
+            while (stream >> charger) {
                 stationChargers[station].push_back(charger);
             }
 
-            if (stream.fail()) {
+            // check for failure to parse
+            if (stream.fail() and !stream.eof()) {
                 return std::unexpected{ErrorCode::ParseError};
             }
         }

@@ -14,6 +14,11 @@ target_compile_options(test PRIVATE -Wall -Wextra -Werror)
 
 target_link_libraries(test GTest::gtest GTest::gtest_main)
 
+target_compile_definitions(test PRIVATE
+    PROJECT_ROOT="${CMAKE_SOURCE_DIR}"
+)
+
 target_sources(test PRIVATE
     ${PROJECT_SOURCE_DIR}/test/test.cpp
+    ${PROJECT_SOURCE_DIR}/src/calculate.cpp
 )

@@ -13,5 +13,5 @@ namespace Calculate {
     };
 
     std::expected<std::vector<std::string>,ErrorCode> calculateUptime(const std::string& name);
-    std::expected<std::unordered_map<int, std::vector<int>>,ErrorCode> parseStationChargers(std::ifstream& file);
+    std::expected<std::unordered_map<int, std::vector<int>>,ErrorCode> parseStationChargers(std::istream &file);
 }

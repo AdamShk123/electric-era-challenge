@@ -24,6 +24,7 @@ namespace Calculate {
     };
 
     auto calculateUptime(const std::string& name) -> std::expected<std::vector<std::string>,ErrorCode> ;
-    auto parseStationChargers(std::istream &file) -> std::expected<std::unordered_map<uint32_t, std::vector<uint32_t>>,ErrorCode>;
+    auto parseStationChargers(std::istream &file) -> std::expected<std::unordered_map<uint32_t, uint32_t>,ErrorCode>;
     auto parseAvailabilityReports(std::istream &file) -> std::expected<std::unordered_map<uint32_t, std::vector<Uptime>>, ErrorCode>;
+    auto produceUptimeResults(const std::unordered_map<uint32_t, uint32_t>& chargerToStation, const std::unordered_map<uint32_t, std::vector<Uptime>>& uptimes) -> std::expected<std::vector<std::string>,ErrorCode>;
 }

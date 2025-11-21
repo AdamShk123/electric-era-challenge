@@ -29,13 +29,19 @@ namespace Calculate {
 
         file.close();
 
-        return {};
+        auto results = produceUptimeResults(stationChargers.value(), availabilityReports.value());
+
+        if (!results.has_value()) {
+            return std::unexpected{results.error()};
+        }
+
+        return results;
     }
 
-    auto parseStationChargers(std::istream& file) -> std::expected<std::unordered_map<uint32_t, std::vector<uint32_t>>,ErrorCode> {
+    auto parseStationChargers(std::istream& file) -> std::expected<std::unordered_map<uint32_t, uint32_t>,ErrorCode> {
         std::string line{};
 
-        std::unordered_map<uint32_t, std::vector<uint32_t>> stationChargers{};
+        std::unordered_map<uint32_t, uint32_t> chargerToStation{};
 
         // skip [Stations] line as it's only a header and doesn't contain any data
         file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
@@ -56,7 +62,7 @@ namespace Calculate {
 
             // get charger numbers
             while (stream >> charger) {
-                stationChargers[station].push_back(charger);
+                chargerToStation[charger] = station;
             }
 
             // check for failure to parse
@@ -65,7 +71,7 @@ namespace Calculate {
             }
         }
 
-        return stationChargers;
+        return chargerToStation;
     }
 
     auto parseAvailabilityReports(std::istream& file) -> std::expected<std::unordered_map<uint32_t, std::vector<Uptime>>, ErrorCode> {
@@ -113,5 +119,11 @@ namespace Calculate {
         }
 
         return availabilityReports;
+    }
+
+    auto produceUptimeResults(const std::unordered_map<uint32_t, uint32_t>& chargerToStation, const std::unordered_map<uint32_t, std::vector<Uptime>>& uptimes) -> std::expected<std::vector<std::string>,ErrorCode> {
+        std::println("{}",chargerToStation.size());
+        std::println("{}",uptimes.size());
+        return {};
     }
 } // namespace Calculate

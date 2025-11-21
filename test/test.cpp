@@ -82,3 +82,30 @@ TEST(CalculateTest, CorrectlyParseAvailabilityReports) {
     ASSERT_TRUE(result.has_value());
     EXPECT_EQ(result.value(), expected);
 }
+
+TEST(CalculateTest, CorrectlyProduceResults) {
+    const auto chargerToStation = std::unordered_map<uint32_t, uint32_t>{
+            {1001, 0},
+            {1002, 0},
+            {1003, 1},
+            {1004, 2}
+    };
+
+    const auto availabilityReports = std::unordered_map<uint32_t,std::vector<Calculate::Uptime>>{
+            {1001,{{0,50000,true},{50000,100000,true}}},
+            {1002,{{50000,100000,true}}},
+            {1003,{{25000,75000,false}}},
+            {1004,{{0,50000,true},{100000,200000,true}}}
+    };
+
+    const auto expected = std::vector<std::string>{
+        "0 100",
+        "1 0",
+        "2 75"
+    };
+
+    const auto result = Calculate::produceUptimeResults(chargerToStation,availabilityReports);
+
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result.value(), expected);
+}

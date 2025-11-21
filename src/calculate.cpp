@@ -2,6 +2,9 @@
 
 #include <print>
 #include <sstream>
+#include <algorithm>
+#include <map>
+#include <format>
 
 namespace Calculate {
     auto calculateUptime(const std::string& name) -> std::expected<std::vector<std::string>,ErrorCode> {
@@ -121,9 +124,43 @@ namespace Calculate {
         return availabilityReports;
     }
 
-    auto produceUptimeResults(const std::unordered_map<uint32_t, uint32_t>& chargerToStation, const std::unordered_map<uint32_t, std::vector<Uptime>>& uptimes) -> std::expected<std::vector<std::string>,ErrorCode> {
-        std::println("{}",chargerToStation.size());
-        std::println("{}",uptimes.size());
-        return {};
+    auto produceUptimeResults(const std::unordered_map<uint32_t, uint32_t>& chargerToStation, const std::unordered_map<uint32_t, std::vector<Uptime>>& availabilityReports) -> std::expected<std::vector<std::string>,ErrorCode> {
+        // Use map instead of unordered_map to keep results sorted by station number
+        std::map<uint32_t, uint32_t> results{};
+
+        std::optional<uint64_t> prev = std::nullopt;
+
+        for (const auto &[charger, uptimes] : availabilityReports) {
+            uint64_t total{0};
+            uint64_t available{0};
+
+            for (const auto &[start, end, up] : uptimes) {
+                total += end - start;
+
+                if (prev.has_value()) {
+                    total += start - prev.value();
+                }
+
+                if (up) {
+                    available += end - start;
+                }
+
+                prev = end;
+            }
+
+            uint32_t station = chargerToStation.at(charger);
+            results[station] = static_cast<uint32_t>(static_cast<double>(available) / total * 100);
+        }
+
+        // Transform map to vector of strings
+        std::vector<std::string> output{};
+        output.reserve(results.size());
+
+        std::transform(results.begin(), results.end(), std::back_inserter(output),
+            [](const auto& pair) {
+                return std::format("{} {}", pair.first, pair.second);
+            });
+
+        return output;
     }
 } // namespace Calculate
